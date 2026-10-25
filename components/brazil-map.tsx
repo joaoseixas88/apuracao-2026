@@ -54,9 +54,9 @@ export function BrazilMap({ results, selected, onSelect }: Props) {
           const callout = labelCallouts[uf];
           if (callout) {
             const [x, y] = callout;
-            return <g key={`${uf}-label`} className="map-label-callout" aria-hidden="true"><line x1={cx} y1={cy} x2={x} y2={y} /><rect x={x - 31} y={y - 9} width="62" height="18" rx="3" /><text x={x} y={y + 3}>{uf} {percent.format(value)}%</text></g>;
+            return <g key={`${uf}-label`} className="map-label-callout" aria-hidden="true" style={{ pointerEvents: "none" }}><line x1={cx} y1={cy} x2={x} y2={y} style={{ stroke: "#6e625d", strokeWidth: 1 }} /><rect x={x - 31} y={y - 9} width="62" height="18" rx="3" style={{ fill: "#fff", stroke: "#cdbfb7", strokeWidth: 1 }} /><text x={x} y={y + 3} style={{ fill: "#352d2a", stroke: "none", fontSize: 9, fontWeight: 800, textAnchor: "middle", fontFamily: "Arial, Helvetica, sans-serif" }}>{uf} {percent.format(value)}%</text></g>;
           }
-          return <text key={`${uf}-label`} className={`map-label ${result?.valid ? "" : "no-data"}`} x={cx} y={cy + 3} aria-hidden="true">{percent.format(value)}%</text>;
+          return <text key={`${uf}-label`} className={`map-label ${result?.valid ? "" : "no-data"}`} x={cx} y={cy + 3} aria-hidden="true" style={{ fill: result?.valid ? "#fff" : "#453b36", stroke: result?.valid ? "#34252599" : "#ffffff99", strokeWidth: 2.4, paintOrder: "stroke", pointerEvents: "none", fontSize: 10, fontWeight: 800, textAnchor: "middle", fontFamily: "Arial, Helvetica, sans-serif" }}>{percent.format(value)}%</text>;
         })}
       </svg>
       <p className="map-credit">Contornos: IBGE · Malha simplificada das UFs</p>
