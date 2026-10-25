@@ -11,6 +11,7 @@ type Props = { results: Result[]; selected: string; onSelect: (uf: string) => vo
 const geography = geographyJson as FeatureCollection;
 const codes: Record<string, string> = { "11": "RO", "12": "AC", "13": "AM", "14": "RR", "15": "PA", "16": "AP", "17": "TO", "21": "MA", "22": "PI", "23": "CE", "24": "RN", "25": "PB", "26": "PE", "27": "AL", "28": "SE", "29": "BA", "31": "MG", "32": "ES", "33": "RJ", "35": "SP", "41": "PR", "42": "SC", "43": "RS", "50": "MS", "51": "MT", "52": "GO", "53": "DF" };
 const partyColors: Record<string, string> = { PT: "#c82032", PL: "#2359a3" };
+const labelCallouts: Record<string, [number, number]> = { RN: [560, 138], PB: [560, 157], PE: [560, 176], AL: [560, 195], SE: [560, 214], ES: [533, 319], RJ: [523, 355], DF: [420, 261] };
 const noData = "#e9e5df";
 const percent = new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const number = new Intl.NumberFormat("pt-BR");
@@ -32,7 +33,7 @@ export function BrazilMap({ results, selected, onSelect }: Props) {
 
   return <section className="map-panel" aria-labelledby="map-title">
     <div className="map-visual">
-      <div className="map-heading"><div><span className="section-index">MAPA ELEITORAL</span><h3 id="map-title">Quem está à frente em cada UF</h3></div><span className="map-hint">Selecione um estado</span></div>
+      <div className="map-heading"><div><span className="section-index">MAPA ELEITORAL</span><h3 id="map-title">Quem está à frente em cada UF</h3></div><span className="map-hint">% de seções totalizadas por UF</span></div>
       <svg className="brazil-map" viewBox="0 0 604 530" role="group" aria-label="Mapa do Brasil com as unidades federativas coloridas pelo partido do candidato à presidência que está à frente na apuração">
         {geography.features.map(feature => {
           const uf = codes[String(feature.properties?.codarea)];
@@ -43,6 +44,19 @@ export function BrazilMap({ results, selected, onSelect }: Props) {
           const isActive = activeUf === uf;
           const description = result && result.valid > 0 ? `${result.state}: ${result.candidates[0]?.name} (${winningParty}) à frente com ${percent.format(result.candidates[0]?.percent || 0)}% dos votos válidos; ${percent.format(result.sections ? result.counted / result.sections * 100 : 0)}% das seções totalizadas` : `${result?.state || uf}: sem dados de votos`;
           return <path key={uf} d={path(feature) || ""} fill={fill} className={`map-state ${isActive ? "is-active" : ""}`} role="button" tabIndex={0} aria-label={description} aria-pressed={selected === uf} onMouseEnter={() => setHovered(uf)} onMouseLeave={() => setHovered(null)} onFocus={() => setHovered(uf)} onBlur={() => setHovered(null)} onClick={() => onSelect(uf)} onKeyDown={event => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); onSelect(uf); } }}><title>{description}</title></path>;
+        })}
+        {geography.features.map(feature => {
+          const uf = codes[String(feature.properties?.codarea)];
+          if (!uf) return null;
+          const result = byUf.get(uf);
+          const value = result?.sections ? result.counted / result.sections * 100 : 0;
+          const [cx, cy] = path.centroid(feature);
+          const callout = labelCallouts[uf];
+          if (callout) {
+            const [x, y] = callout;
+            return <g key={`${uf}-label`} className="map-label-callout" aria-hidden="true"><line x1={cx} y1={cy} x2={x} y2={y} /><rect x={x - 31} y={y - 9} width="62" height="18" rx="3" /><text x={x} y={y + 3}>{uf} {percent.format(value)}%</text></g>;
+          }
+          return <text key={`${uf}-label`} className={`map-label ${result?.valid ? "" : "no-data"}`} x={cx} y={cy + 3} aria-hidden="true">{percent.format(value)}%</text>;
         })}
       </svg>
       <p className="map-credit">Contornos: IBGE · Malha simplificada das UFs</p>

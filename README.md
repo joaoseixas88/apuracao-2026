@@ -11,7 +11,7 @@ npm run dev
 
 A interface consulta `/api/results` a cada 30 segundos. Essa rota lê os arquivos públicos do TSE no servidor e mantém cache de 25 segundos. Se algum arquivo falhar, os demais resultados continuam disponíveis.
 
-O mapa usa a malha simplificada das 27 UFs do IBGE, incluída em `data/br-ufs.json`. Os contornos foram reorientados para o renderizador geográfico; `npm test` verifica essa geometria. Cada UF é colorida pelo partido do candidato à presidência que está à frente naquele estado: PT em vermelho, PL em azul. A cor representa apenas a liderança parcial daquela UF. Os percentuais aparecem com duas casas decimais, e o detalhe do mapa mostra a diferença entre os candidatos em pontos percentuais.
+O mapa usa a malha simplificada das 27 UFs do IBGE, incluída em `data/br-ufs.json`. Os contornos foram reorientados para o renderizador geográfico; `npm test` verifica essa geometria. Cada UF é colorida pelo partido do candidato à presidência que está à frente naquele estado: PT em vermelho, PL em azul. A cor representa apenas a liderança parcial daquela UF. O mapa mostra em cada UF o percentual de seções totalizadas, com duas casas decimais. Os demais percentuais também usam duas casas decimais, e o detalhe do mapa mostra a diferença entre os candidatos em pontos percentuais.
 
 ## Netlify
 
