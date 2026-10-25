@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ArrowDownUp, ArrowUpRight, Clock3, ExternalLink, RefreshCw, Search } from "lucide-react";
+import { BrazilMap } from "../components/brazil-map";
 
 type Candidate = { number: string; name: string; party: string; votes: number; percent: number };
 type Result = { uf: string; state: string; office: "president" | "governor"; candidates: Candidate[]; sections: number; counted: number; valid: number; blank: number; nullVotes: number; updatedAt: string; sourceUrl: string };
@@ -9,9 +10,9 @@ type Payload = { national: Result | null; president: Result[]; governor: Result[
 type Tab = "president" | "governor";
 type Sort = "name" | "counted" | "margin";
 const nf = new Intl.NumberFormat("pt-BR");
-const pf = new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
-const colors: Record<string, string> = { "13": "#d95143", "22": "#2a7a70" };
-const candidateColor = (number: string, index: number, office: Tab) => office === "president" ? colors[number] || "#53707a" : ["#2a7a70", "#dc8951"][index] || "#53707a";
+const pf = new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const colors: Record<string, string> = { "13": "#c82032", "22": "#2359a3" };
+const candidateColor = (number: string, index: number, office: Tab) => office === "president" ? colors[number] || "#7c6b60" : ["#c82032", "#2359a3"][index] || "#7c6b60";
 const fmt = (n: number) => nf.format(n);
 const pct = (n: number) => `${pf.format(n)}%`;
 const sectionPercent = (r: Result) => r.sections ? r.counted / r.sections * 100 : 0;
@@ -83,6 +84,7 @@ export default function Home() {
       <div className="tabs" role="tablist" aria-label="Cargo"><button role="tab" aria-selected={tab === "president"} className={tab === "president" ? "active" : ""} onClick={() => { setTab("president"); setSelected("BR"); }}>Presidente <span>Brasil + 27 UFs</span></button><button role="tab" aria-selected={tab === "governor"} className={tab === "governor" ? "active" : ""} onClick={() => { setTab("governor"); setSelected(""); }}>Governador <span>Estados com 2º turno</span></button></div>
       {loading ? <div className="loading" role="status">Carregando resultados oficiais do TSE…</div> : featured ? <div className="overview"><div className="overview-main"><div className="overview-kicker"><span>{featured.uf === "BR" ? "RESULTADO NACIONAL" : featured.state.toLocaleUpperCase("pt-BR")}</span><span className="preliminary">TOTALIZAÇÃO PARCIAL</span></div><h3>{featured.uf === "BR" ? "Brasil" : featured.state}<span>{featured.office === "president" ? " · Presidente" : " · Governador"}</span></h3><ResultBars result={featured} /><div className="overview-foot"><span><strong>{pct(sectionPercent(featured))}</strong> das seções totalizadas</span><span>Boletim TSE: {time(featured.updatedAt)}</span></div></div><div className="stats"><div className="stat"><span>SEÇÕES TOTALIZADAS</span><strong>{fmt(featured.counted)} <small>/ {fmt(featured.sections)}</small></strong><div className="stat-meter"><span style={{ width: `${sectionPercent(featured)}%` }} /></div></div><div className="stat"><span>VOTOS VÁLIDOS</span><strong>{fmt(featured.valid)}</strong></div><div className="stat-grid"><div className="stat"><span>BRANCOS</span><strong>{fmt(featured.blank)}</strong></div><div className="stat"><span>NULOS</span><strong>{fmt(featured.nullVotes)}</strong></div></div><a className="source-detail" href={featured.sourceUrl} target="_blank" rel="noreferrer">Abrir arquivo oficial <ExternalLink size={14} /></a></div></div> : <div className="loading">Ainda não há resultados para este cargo.</div>}
       <div className="section-heading states-heading"><div><span className="section-index">02 / POR UNIDADE FEDERATIVA</span><h2>{tab === "president" ? "Todos os estados" : "Disputas para governador"}</h2></div><span className="state-total">{results.length} {tab === "president" ? "UFs" : "disputas"} com dados</span></div>
+      {tab === "president" && <BrazilMap results={results} selected={selected} onSelect={setSelected} />}
       <div className="toolbar"><label className="search"><Search size={18} /><input value={query} onChange={event => setQuery(event.target.value)} placeholder="Buscar estado ou UF" aria-label="Buscar estado ou UF" /></label><label className="sort"><ArrowDownUp size={16} /><span>Ordenar</span><select value={sort} onChange={event => setSort(event.target.value as Sort)}><option value="name">Nome</option><option value="counted">Mais apuradas</option><option value="margin">Maior diferença</option></select></label><button className="refresh" onClick={refresh} disabled={refreshing} aria-label="Atualizar resultados"><RefreshCw size={17} className={refreshing ? "spinning" : ""} /> Atualizar</button></div>
       <div className="state-list">{filtered.map(r => <button className={`state-item ${selected === r.uf ? "selected" : ""}`} key={r.uf} onClick={() => { setSelected(r.uf); window.scrollTo({ top: 240, behavior: "smooth" }); }}><div className="state-identity"><span className="uf">{r.uf}</span><div><strong>{r.state}</strong><small>{pct(sectionPercent(r))} das seções</small></div></div><div className="state-candidates"><ResultBars result={r} compact /></div><div className="state-trailing"><span>{time(r.updatedAt)}</span><ArrowUpRight size={16} /></div></button>)}</div>
       {!loading && !filtered.length && <div className="empty">{query ? "Nenhum estado encontrado para essa busca." : "Aguardando dados do TSE para estas disputas."}</div>}
